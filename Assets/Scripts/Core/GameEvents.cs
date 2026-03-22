@@ -19,6 +19,7 @@ public static class GameEvents
     public static event Action OnGameStart;
     public static event Action<int> OnGameOver;
     public static event Action OnGameRestart;
+    public static event Action<bool> OnReplayToggle;
 
     public static void BallPickedUp() => OnBallPickedUp?.Invoke();
     public static void ThrowReleased() => OnThrowReleased?.Invoke();
@@ -31,4 +32,5 @@ public static class GameEvents
     public static void GameStart() => OnGameStart?.Invoke();
     public static void GameOver(int finalScore) => OnGameOver?.Invoke(finalScore);
     public static void GameRestart() => OnGameRestart?.Invoke();
+    public static void ReplayToggle(bool active) => OnReplayToggle?.Invoke(active);
 }

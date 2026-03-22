@@ -16,6 +16,7 @@ public class CameraController : MonoBehaviour
 
     private float _verticalRotation;
     private bool _isGameOver;
+    private bool _isReplaying;
 
     private void Start()
     {
@@ -25,6 +26,7 @@ public class CameraController : MonoBehaviour
         if (_playerRig == null) _playerRig = transform.parent;
 
         GameEvents.OnGameOver += HandleGameOver;
+        GameEvents.OnReplayToggle += (active) => _isReplaying = active;
     }
 
     private void OnDestroy()
@@ -39,7 +41,7 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        if (_isGameOver || _playerRig == null) return;
+        if (_isGameOver || _isReplaying || _playerRig == null) return;
         if (Time.frameCount < 5) return;
         
         Vector2 mouseDelta = Mouse.current != null ? Mouse.current.delta.ReadValue() : Vector2.zero;

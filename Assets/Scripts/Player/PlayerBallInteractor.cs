@@ -25,6 +25,7 @@ public class PlayerBallInteractor : MonoBehaviour
 
     private bool _isHoldingBall;
     private bool _isGameOver;
+    private bool _isReplaying;
     private LineRenderer _trajectoryLine;
 
     private void Awake()
@@ -49,6 +50,7 @@ public class PlayerBallInteractor : MonoBehaviour
         }
 
         GameEvents.OnGameOver += HandleGameOver;
+        GameEvents.OnReplayToggle += (active) => _isReplaying = active;
         SetupTrajectoryLine();
     }
 
@@ -86,7 +88,7 @@ public class PlayerBallInteractor : MonoBehaviour
 
     private void Update()
     {
-        if (_isGameOver) return;
+        if (_isGameOver || _isReplaying) return;
 
         if (_inputReader.WasResetPressedThisFrame)
         {

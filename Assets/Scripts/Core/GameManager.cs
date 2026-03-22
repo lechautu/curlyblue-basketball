@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float _gameDuration = 60f;
     private float _timeRemaining;
     private bool _isGameOver;
+    private bool _isPausedForReplay;
 
     [Header("References")]
     [SerializeField] private ScoreManager _scoreManager;
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
         _quitAction.Enable();
 
         GameEvents.OnGameRestart += RestartGame;
+        GameEvents.OnReplayToggle += (paused) => _isPausedForReplay = paused;
     }
 
     private void OnDisable()
@@ -40,7 +42,7 @@ public class GameManager : MonoBehaviour
     {
         HandleQuit();
 
-        if (_isGameOver) return;
+        if (_isGameOver || _isPausedForReplay) return;
 
         if (_timeRemaining > 0)
         {
