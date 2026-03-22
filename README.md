@@ -58,9 +58,3 @@ Assets/Scripts/
 2. Open `Assets/Scenes/SampleScene.unity`
 3. Press **Play**
 4. Click the ball → hold to charge → release to throw → score!
-
-## Known Limitations
-
-- Audio uses procedural generation (no imported WAV files) — assign real clips to `FeedbackManager` for better sound
-- No net mesh on the hoop (visual only — rim colliders are functional)
-- Single scene, no menu system (by design — scope-limited prototype)
