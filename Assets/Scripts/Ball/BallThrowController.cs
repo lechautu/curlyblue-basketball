@@ -11,7 +11,7 @@ public class BallThrowController : MonoBehaviour
     [SerializeField] private float _maxThrowForce = 20f;
     [SerializeField] private float _maxChargeTime = 1.5f;
     [SerializeField] private float _upwardAssist = 0.45f;
-    [SerializeField] private float _torqueAmount = 5f;
+    [SerializeField] private float _torqueAmount = 10f;
     [SerializeField] private AnimationCurve _chargeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     private float _chargeTimer;
@@ -36,6 +36,18 @@ public class BallThrowController : MonoBehaviour
     {
         if (!_isCharging) return;
         _chargeTimer = Mathf.Min(_chargeTimer + Time.deltaTime, _maxChargeTime);
+    }
+
+    /// <summary>
+    /// Gets the current velocity based on charge without stopping it.
+    /// </summary>
+    public void GetCurrentThrowVelocity(Transform cameraTransform, out Vector3 velocity)
+    {
+        float normalized = _maxChargeTime > 0f ? Mathf.Clamp01(_chargeTimer / _maxChargeTime) : 1f;
+        float force = Mathf.Lerp(_minThrowForce, _maxThrowForce, _chargeCurve.Evaluate(normalized));
+
+        Vector3 throwDir = (cameraTransform.forward + cameraTransform.up * _upwardAssist).normalized;
+        velocity = throwDir * force;
     }
 
     /// <summary>

@@ -18,8 +18,14 @@ public class PlayerBallInteractor : MonoBehaviour
     [SerializeField] private float _pickupRange = 15f;
     [SerializeField] private LayerMask _ballLayer;
 
+    [Header("Trajectory Settings")]
+    [SerializeField] private int _trajectorySegments = 30;
+    [SerializeField] private float _trajectoryTimeStep = 0.05f;
+    [SerializeField] private float _trajectoryWidth = 0.05f;
+
     private bool _isHoldingBall;
     private bool _isGameOver;
+    private LineRenderer _trajectoryLine;
 
     private void Awake()
     {
@@ -33,7 +39,6 @@ public class PlayerBallInteractor : MonoBehaviour
             }
             else
             {
-                // Fallback: use Everything
                 _ballLayer = ~0;
             }
         }
@@ -44,6 +49,24 @@ public class PlayerBallInteractor : MonoBehaviour
         }
 
         GameEvents.OnGameOver += HandleGameOver;
+        SetupTrajectoryLine();
+    }
+
+    private void SetupTrajectoryLine()
+    {
+        GameObject trajObj = new GameObject("ThrowTrajectory");
+        trajObj.transform.SetParent(this.transform);
+        _trajectoryLine = trajObj.AddComponent<LineRenderer>();
+        _trajectoryLine.positionCount = _trajectorySegments;
+        _trajectoryLine.startWidth = _trajectoryWidth;
+        _trajectoryLine.endWidth = _trajectoryWidth * 0.2f;
+        
+        // Setup Material and Blue Color with alpha (approx 60%)
+        _trajectoryLine.material = new Material(Shader.Find("Sprites/Default"));
+        Color blueAlpha = new Color(0f, 0.4f, 1f, 0.6f); 
+        _trajectoryLine.startColor = blueAlpha;
+        _trajectoryLine.endColor = blueAlpha;
+        _trajectoryLine.enabled = false;
     }
 
     private void OnDestroy()
@@ -54,18 +77,17 @@ public class PlayerBallInteractor : MonoBehaviour
     private void HandleGameOver(int score)
     {
         _isGameOver = true;
-        // If holding, force release
         if (_isHoldingBall)
         {
             ResetBall();
         }
+        if (_trajectoryLine != null) _trajectoryLine.enabled = false;
     }
 
     private void Update()
     {
         if (_isGameOver) return;
 
-        // Reset request
         if (_inputReader.WasResetPressedThisFrame)
         {
             ResetBall();
@@ -74,7 +96,6 @@ public class PlayerBallInteractor : MonoBehaviour
 
         if (!_isHoldingBall)
         {
-            // Try pickup on click (Down)
             if (_inputReader.WasPickupThrowPressedThisFrame)
             {
                 TryPickup();
@@ -82,24 +103,24 @@ public class PlayerBallInteractor : MonoBehaviour
         }
         else
         {
-            // If already holding, and user presses again, start charging
             if (_inputReader.WasPickupThrowPressedThisFrame)
             {
                 _throwController.BeginCharge();
             }
 
-            // Charging logic
             if (_throwController.IsCharging)
             {
                 _throwController.UpdateCharge();
 
-                // Update charge bar on HUD
                 if (_hudController != null)
                 {
                     _hudController.SetChargePercent(_throwController.ChargePercent);
                 }
 
-                // Release to throw
+                // Draw trajectory while charging
+                _throwController.GetCurrentThrowVelocity(_mainCamera.transform, out Vector3 currentVel);
+                UpdateTrajectory(_ballHoldPoint.position, currentVel);
+
                 if (_inputReader.WasPickupThrowReleasedThisFrame)
                 {
                     ExecuteThrow();
@@ -118,7 +139,6 @@ public class PlayerBallInteractor : MonoBehaviour
             {
                 ball.SetHeldState(_ballHoldPoint);
                 _isHoldingBall = true;
-                // Removed BeginCharge() from here - only pickup, no charge yet
             }
         }
     }
@@ -129,7 +149,8 @@ public class PlayerBallInteractor : MonoBehaviour
         _ballController.Throw(velocity, angularVelocity);
         _isHoldingBall = false;
 
-        // Hide charge bar
+        if (_trajectoryLine != null) _trajectoryLine.enabled = false;
+
         if (_hudController != null)
         {
             _hudController.SetChargePercent(0f);
@@ -142,13 +163,26 @@ public class PlayerBallInteractor : MonoBehaviour
         {
             _throwController.StopCharge();
             _isHoldingBall = false;
-
-            // Hide charge bar
-            if (_hudController != null)
-            {
-                _hudController.SetChargePercent(0f);
-            }
+            if (_hudController != null) _hudController.SetChargePercent(0f);
         }
         _ballController.ResetToSpawn();
+        if (_trajectoryLine != null) _trajectoryLine.enabled = false;
+    }
+
+    private void UpdateTrajectory(Vector3 startPos, Vector3 velocity)
+    {
+        if (_trajectoryLine == null) return;
+        _trajectoryLine.enabled = true;
+
+        float g = Physics.gravity.y;
+        for (int i = 0; i < _trajectorySegments; i++)
+        {
+            float t = i * _trajectoryTimeStep;
+            float x = startPos.x + velocity.x * t;
+            float z = startPos.z + velocity.z * t;
+            float y = startPos.y + velocity.y * t + 0.5f * g * t * t;
+
+            _trajectoryLine.SetPosition(i, new Vector3(x, y, z));
+        }
     }
 }

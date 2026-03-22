@@ -11,6 +11,9 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float _mouseSensitivity = 0.1f;
     [SerializeField] private float _verticalClamp = 80f;
 
+    [Header("References")]
+    [SerializeField] private Transform _playerRig;
+
     private float _verticalRotation;
     private bool _isGameOver;
 
@@ -19,6 +22,8 @@ public class CameraController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         
+        if (_playerRig == null) _playerRig = transform.parent;
+
         GameEvents.OnGameOver += HandleGameOver;
     }
 
@@ -34,15 +39,16 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        if (_isGameOver) return;
+        if (_isGameOver || _playerRig == null) return;
         if (Time.frameCount < 5) return;
+        
         Vector2 mouseDelta = Mouse.current != null ? Mouse.current.delta.ReadValue() : Vector2.zero;
 
         float mouseX = mouseDelta.x * _mouseSensitivity;
         float mouseY = mouseDelta.y * _mouseSensitivity;
 
         // Horizontal rotation on the parent (PlayerRig)
-        transform.parent.Rotate(Vector3.up * mouseX);
+        _playerRig.Rotate(Vector3.up * mouseX);
 
         // Vertical rotation on this camera
         _verticalRotation -= mouseY;

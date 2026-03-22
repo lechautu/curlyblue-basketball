@@ -410,6 +410,9 @@ MonoBehaviour:
   _ballLayer:
     serializedVersion: 2
     m_Bits: 256
+  _trajectorySegments: 30
+  _trajectoryTimeStep: 0.05
+  _trajectoryWidth: 0.05
 --- !u!114 &158509330
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -474,7 +477,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BallThrowController
   _minThrowForce: 8
   _maxThrowForce: 20
-  _maxChargeTime: 1.5
+  _maxChargeTime: 4
   _upwardAssist: 0.45
   _torqueAmount: 5
   _chargeCurve:
@@ -513,8 +516,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bd87891e8c20654fafc2b578a76d91d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BallController
-  _rb: {fileID: 0}
-  _collider: {fileID: 0}
+  _rb: {fileID: 250609506}
+  _collider: {fileID: 250609508}
 --- !u!54 &250609506
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -598,7 +601,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 250609502}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2132072162}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -630,8 +633,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -3}
-  m_LocalScale: {x: 0.48, y: 0.48, z: 0.48}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -801,6 +804,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   _mouseSensitivity: 0.15
   _verticalClamp: 80
+  _playerRig: {fileID: 158509328}
 --- !u!1 &372651721
 GameObject:
   m_ObjectHideFlags: 0
@@ -1148,7 +1152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.6}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2470,7 +2474,7 @@ Transform:
   m_GameObject: {fileID: 1442709589}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: 0}
+  m_LocalPosition: {x: 0, y: -0.254, z: 0}
   m_LocalScale: {x: 0.44, y: 0.01, z: 0.44}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3488,7 +3492,6 @@ GameObject:
   - component: {fileID: 1879651631}
   - component: {fileID: 1879651630}
   - component: {fileID: 1879651629}
-  - component: {fileID: 1879651628}
   - component: {fileID: 1879651634}
   - component: {fileID: 1879651635}
   m_Layer: 0
@@ -3498,29 +3501,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1879651628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1879651627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92e07cc3538783b429048b5f1243bd1a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HUDController
-  _scoreText: {fileID: 0}
-  _instructionText: {fileID: 0}
-  _chargeSlider: {fileID: 1459545185}
-  _chargeSliderFill: {fileID: 411045466}
-  _timerText: {fileID: 0}
-  _gameOverRoot: {fileID: 0}
-  _finalScoreText: {fileID: 0}
-  _replayButton: {fileID: 0}
-  _gameManager: {fileID: 1879651632}
-  _popScale: 1.4
-  _popDuration: 0.25
 --- !u!82 &1879651629
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3631,7 +3611,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FeedbackManager
   _throwSfxId: throw
-  _rimHitSfxId: rim
+  _rimHitSfxId: ball_hit_backboard
   _backboardHitSfxId: ball_hit_backboard
   _scoreSfxId: score
   _groundHitSfxId: ball_hit_ground
@@ -3908,6 +3888,19 @@ Transform:
   - {fileID: 1543921503}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!134 &2132072162
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
